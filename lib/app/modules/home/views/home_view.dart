@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:myfirebase/app/routes/app_pages.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -14,16 +16,38 @@ class HomeView extends GetView<HomeController> {
         actions: [
           IconButton(
               onPressed: () {
-                controller.logout();
+                Get.toNamed(Routes.PROFILE);
               },
-              icon: Icon(Icons.logout))
+              icon: Icon(Icons.person))
         ],
       ),
-      body: Center(
-        child: Text(
-          'HomeView is working',
-          style: TextStyle(fontSize: 20),
-        ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: controller.streamAllNotes(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            return ListView.builder(
+              itemCount: snapshot.data!.docs.length,
+              itemBuilder: (context, index) {
+                var dataNote = snapshot.data!.docs[index];
+                var note = dataNote.data();
+                return ListTile(
+                  title: Text("${note['title']}"),
+                  subtitle: Text("${note['desc']}"),
+                  leading: CircleAvatar(
+                    child: Text("${index + 1}"),
+                  ),
+                );
+              },
+            );
+          }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.toNamed(Routes.ADD_NOTE),
+        child: Icon(Icons.add),
       ),
     );
   }

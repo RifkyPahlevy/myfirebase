@@ -29,14 +29,17 @@ class LoginController extends GetxController {
         print(userCredential);
         isLoading.value = false;
 
-        if (isRememberMe.isTrue) {
+        if (userCredential.user!.emailVerified == true) {
           if (box.read("rememberme") != null) {
             box.remove("rememberme");
-          } else {
-            box.write("rememberme", {"email": emailC.text, "pass": passC.text});
           }
-        }
-        if (userCredential.user!.emailVerified == true) {
+          if (isRememberMe.isTrue) {
+            box.write("rememberme", {
+              "email": emailC.text,
+              "pass": passC.text,
+            });
+          }
+
           Get.offAllNamed(Routes.HOME);
         } else {
           Get.defaultDialog(

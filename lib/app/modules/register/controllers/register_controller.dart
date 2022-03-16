@@ -1,13 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:myfirebase/app/routes/app_pages.dart';
 
 class RegisterController extends GetxController {
   TextEditingController emailC = TextEditingController();
   TextEditingController passC = TextEditingController();
+  TextEditingController nameC = TextEditingController();
+  TextEditingController phoneC = TextEditingController();
   RxBool isLoading = false.obs;
 
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
 
   void errMsg(String message) {
@@ -15,7 +19,10 @@ class RegisterController extends GetxController {
   }
 
   void register() async {
-    if (emailC.text.isNotEmpty && passC.text.isNotEmpty) {
+    if (emailC.text.isNotEmpty &&
+        passC.text.isNotEmpty &&
+        nameC.text.isNotEmpty &&
+        phoneC.text.isNotEmpty) {
       isLoading.value = true;
 
       try {
@@ -27,24 +34,27 @@ class RegisterController extends GetxController {
 
         isLoading.value = false;
         await userCredential.user!.sendEmailVerification();
-        Get.defaultDialog(
-            title: "Email Verifikasi",
-            middleText:
-                "Kami telah mengirimkan email verifikasi ke email anda Silahkan Cek email yang terdaftar",
-            actions: [
-              OutlinedButton(
-                  onPressed: () async {
-                    Get.offAllNamed(Routes.LOGIN);
-                  },
-                  child: Text("Okay"))
-            ]);
+
+        //insert data user
+        firestore.collection("users").doc(userCredential.user!.uid).set({
+          "email": emailC.text,
+          "name": nameC.text,
+          "phone": phoneC.text,
+          "uid": userCredential.user!.uid,
+          "created_at": DateTime.now().toIso8601String()
+        });
+
+        Get.snackbar(
+            "Email Verification", "Kami Telah Mengirim Email Verifikasi");
+        Get.offAllNamed(Routes.LOGIN);
       } on FirebaseAuthException catch (e) {
-        print(e.code);
+        isLoading.value = true;
+        errMsg("${e.code}");
       } catch (e) {
-        print(e);
+        errMsg(e.toString());
       }
     } else {
-      errMsg("Email dan Password tidak boleh kosong");
+      errMsg("Semua tidak boleh kosong");
     }
   }
 }
