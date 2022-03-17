@@ -14,11 +14,33 @@ class HomeView extends GetView<HomeController> {
         title: Text('HomeView'),
         centerTitle: true,
         actions: [
-          IconButton(
-              onPressed: () {
-                Get.toNamed(Routes.PROFILE);
-              },
-              icon: Icon(Icons.person))
+          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: controller.streamProfile(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (snapshot.data == null) {
+                  return CircleAvatar(
+                    backgroundColor: Colors.grey[400],
+                  );
+                }
+                Map<String, dynamic>? dataProfile = snapshot.data!.data();
+                return GestureDetector(
+                  onTap: () => Get.toNamed(Routes.PROFILE),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey[400],
+                    backgroundImage: NetworkImage(dataProfile!["image"] != null
+                        ? snapshot.data!.data()!["image"]
+                        : "https://ui-avatars.com/api/?name=Rifky Pahlevy"),
+                  ),
+                );
+              }),
+          SizedBox(
+            width: 20,
+          )
         ],
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -36,6 +58,11 @@ class HomeView extends GetView<HomeController> {
                 var dataNote = snapshot.data!.docs[index];
                 var note = dataNote.data();
                 return ListTile(
+                  onTap: () =>
+                      Get.toNamed(Routes.EDIT_NOTE, arguments: dataNote.id),
+                  trailing: IconButton(
+                      onPressed: () => controller.deleteNote(dataNote.id),
+                      icon: Icon(Icons.delete)),
                   title: Text("${note['title']}"),
                   subtitle: Text("${note['desc']}"),
                   leading: CircleAvatar(

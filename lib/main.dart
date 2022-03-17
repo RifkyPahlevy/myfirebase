@@ -27,6 +27,7 @@ void main() async {
           }
 
           return GetMaterialApp(
+            debugShowCheckedModeBanner: false,
             title: "Application",
             initialRoute: snap.data != null ? Routes.HOME : Routes.LOGIN,
             getPages: AppPages.routes,

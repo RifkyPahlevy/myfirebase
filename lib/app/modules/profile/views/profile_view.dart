@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -90,6 +92,74 @@ class ProfileView extends GetView<ProfileController> {
                               controller.isHidden.toggle();
                             },
                             icon: Icon(Icons.remove_red_eye_sharp))),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  GetBuilder<ProfileController>(
+                    builder: (c) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          c.image != null
+                              ? Column(
+                                  children: [
+                                    Container(
+                                      height: 100,
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          borderRadius:
+                                              BorderRadius.circular(100),
+                                          image: DecorationImage(
+                                              image: FileImage(
+                                                  File(c.image!.path)),
+                                              fit: BoxFit.cover)),
+                                    ),
+                                    TextButton(
+                                        onPressed: () => c.resetImage(),
+                                        child: Text("reset imager"))
+                                  ],
+                                )
+                              : snap.data?["image"] != null &&
+                                      c.imageProf.isTrue
+                                  ? Column(
+                                      children: [
+                                        Container(
+                                          height: 100,
+                                          width: 100,
+                                          decoration: BoxDecoration(
+                                              color: Colors.grey,
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                              image: DecorationImage(
+                                                  image: NetworkImage(
+                                                      snap.data?["image"]),
+                                                  fit: BoxFit.cover)),
+                                        ),
+                                        TextButton(
+                                            onPressed: () => Get.defaultDialog(
+                                                    title: "Hapus Foto?",
+                                                    actions: [
+                                                      OutlinedButton(
+                                                          onPressed: () =>
+                                                              Get.back(),
+                                                          child: Text("Tidak")),
+                                                      OutlinedButton(
+                                                          onPressed: () =>
+                                                              c.clearImage(),
+                                                          child: Text("Ya")),
+                                                    ]),
+                                            child: Text("Clear Image"))
+                                      ],
+                                    )
+                                  : Text("Belum Ada Data"),
+                          TextButton(
+                              onPressed: () => c.addImage(),
+                              child: Text("Upload foto")),
+                        ],
+                      );
+                    },
                   ),
                   SizedBox(
                     height: 20,

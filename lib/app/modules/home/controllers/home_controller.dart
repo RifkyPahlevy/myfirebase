@@ -16,4 +16,24 @@ class HomeController extends GetxController {
         .orderBy("createAt", descending: true)
         .snapshots();
   }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> streamProfile() async* {
+    String uid = auth.currentUser!.uid;
+
+    yield* await firestore.collection("users").doc(uid).snapshots();
+  }
+
+  void deleteNote(String UID) async {
+    try {
+      String id = auth.currentUser!.uid;
+      await firestore
+          .collection("users")
+          .doc(id)
+          .collection("notes")
+          .doc(UID)
+          .delete();
+    } catch (e) {
+      Get.snackbar("Terjadi Kesalahan", "Gagal Menghapus Data");
+    }
+  }
 }
